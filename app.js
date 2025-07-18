@@ -8,6 +8,14 @@ toggleMode.onclick = () => {
   document.documentElement.classList.toggle('dark');
 };
 
+function formatarDataBR(dataStr) {
+  const data = new Date(dataStr);
+  const dia = String(data.getDate()).padStart(2, '0');
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const ano = data.getFullYear();
+  return `${dia}/${mes}/${ano}`;
+}
+
 monitorSelect.onchange = async () => {
   const monitor = monitorSelect.value;
   if (!monitor) {
@@ -20,31 +28,16 @@ monitorSelect.onchange = async () => {
     if (!res.ok) throw new Error('Erro ao buscar dados');
     const data = await res.json();
 
-    // Filtra cards do monitor selecionado e ordena
-function formatarDataBR(dataStr) {
-  const data = new Date(dataStr);
-  const dia = String(data.getDate()).padStart(2, '0');
-  const mes = String(data.getMonth() + 1).padStart(2, '0');
-  const ano = data.getFullYear();
-  return `${dia}/${mes}/${ano}`;
-}
+    const dataHojeStr = formatarDataBR(new Date());
 
-const dataHoje = new Date();
-const dataHojeStr = formatarDataBR(dataHoje);
+    const cards = data
+      .filter(c => c.monitor === monitor && formatarDataBR(c.data) === dataHojeStr)
+      .sort((a, b) => {
+        if (a.status === 'feito' && b.status !== 'feito') return 1;
+        if (a.status !== 'feito' && b.status === 'feito') return -1;
 
-const cards = data
-  // filtra cards do monitor atual E do dia atual
-  .filter(c => c.monitor === monitor && formatarDataBR(c.data) === dataHojeStr)
-  .sort((a, b) => {
-    if (a.status === 'feito' && b.status !== 'feito') return 1;
-    if (a.status !== 'feito' && b.status === 'feito') return -1;
-
-    // converte datas ISO para Date para ordenar
-    const d1 = new Date(a.data);
-    const d2 = new Date(b.data);
-    return d1 - d2;
-  });
-
+        return new Date(a.data) - new Date(b.data);
+      });
 
     board.innerHTML = '';
 
@@ -59,7 +52,7 @@ const cards = data
 
       el.innerHTML = `
         <h3>${card.time}</h3>
-        <p><strong>Data:</strong> ${card.data}</p>
+        <p><strong>Data:</strong> ${formatarDataBR(card.data)}</p>
         <p><strong>Status:</strong> ${card.status}</p>
         ${card.log ? `<p><strong>Log:</strong> ${card.log}</p>` : ''}
         <button class="btn btn-concluir" data-id="${card.id}" ${card.status === 'feito' ? 'disabled' : ''}>✅ Concluir</button>
@@ -69,7 +62,6 @@ const cards = data
       board.appendChild(el);
     });
 
-    // Eventos nos botões
     document.querySelectorAll('.btn-concluir').forEach(btn => {
       btn.addEventListener('click', () => marcarFeito(btn.dataset.id, monitor));
     });
@@ -90,22 +82,23 @@ async function marcarFeito(id, monitor) {
     monitor,
     status: "feito",
     log: `Concluído em ${log}`,
-    data: new Date().toLocaleDateString('pt-BR'),
+    data: new Date().toISOString(),
     precisaAjuda: false,
     transferidoPara: ""
   };
 
   try {
-    await fetch(API_URL, {
+    const res = await fetch(API_URL, {
       method: 'POST',
-      mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+    if (!res.ok) throw new Error('Erro na requisição');
     alert('Card marcado como concluído!');
     monitorSelect.dispatchEvent(new Event('change'));
-  } catch {
+  } catch (error) {
     alert('Erro ao marcar card como concluído.');
+    console.error(error);
   }
 }
 
@@ -115,21 +108,22 @@ async function pedirAjuda(id, monitor) {
     monitor,
     status: "pendente",
     log: "Pedido de ajuda solicitado",
-    data: new Date().toLocaleDateString('pt-BR'),
+    data: new Date().toISOString(),
     precisaAjuda: true,
     transferidoPara: ""
   };
 
   try {
-    await fetch(API_URL, {
+    const res = await fetch(API_URL, {
       method: 'POST',
-      mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+    if (!res.ok) throw new Error('Erro na requisição');
     alert('Pedido de ajuda enviado!');
     monitorSelect.dispatchEvent(new Event('change'));
-  } catch {
+  } catch (error) {
     alert('Erro ao enviar pedido de ajuda.');
+    console.error(error);
   }
 }
