@@ -1,4 +1,6 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbxmou-BtgAPutxD1sqvQdhLdgNWYgXYp9OySbWyYNk0gJY9irdXULfA6AUBQ1K7tSKw-A/exec';
+const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+const API_URL = proxyUrl + 'https://script.google.com/macros/s/AKfycbxmou-BtgAPutxD1sqvQdhLdgNWYgXYp9OySbWyYNk0gJY9irdXULfA6AUBQ1K7tSKw-A/exec';
+
 
 const monitorSelect = document.getElementById('monitorSelect');
 const board = document.getElementById('kanbanBoard');
