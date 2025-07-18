@@ -21,16 +21,30 @@ monitorSelect.onchange = async () => {
     const data = await res.json();
 
     // Filtra cards do monitor selecionado e ordena
-    const cards = data
-      .filter(c => c.monitor === monitor)
-      .sort((a, b) => {
-        if (a.status === 'feito' && b.status !== 'feito') return 1;
-        if (a.status !== 'feito' && b.status === 'feito') return -1;
-        // Ordena por data (formato dd/mm/yyyy)
-        const d1 = a.data.split('/').reverse().join('-');
-        const d2 = b.data.split('/').reverse().join('-');
-        return new Date(d1) - new Date(d2);
-      });
+function formatarDataBR(dataStr) {
+  const data = new Date(dataStr);
+  const dia = String(data.getDate()).padStart(2, '0');
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const ano = data.getFullYear();
+  return `${dia}/${mes}/${ano}`;
+}
+
+const dataHoje = new Date();
+const dataHojeStr = formatarDataBR(dataHoje);
+
+const cards = data
+  // filtra cards do monitor atual E do dia atual
+  .filter(c => c.monitor === monitor && formatarDataBR(c.data) === dataHojeStr)
+  .sort((a, b) => {
+    if (a.status === 'feito' && b.status !== 'feito') return 1;
+    if (a.status !== 'feito' && b.status === 'feito') return -1;
+
+    // converte datas ISO para Date para ordenar
+    const d1 = new Date(a.data);
+    const d2 = new Date(b.data);
+    return d1 - d2;
+  });
+
 
     board.innerHTML = '';
 
