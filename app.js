@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbyFR3TiiFQ5iY3qmblxLno-zeHgh6bbUqhyvU4C5DEmeAE-_cBCQrKOduIiCQKuHu1kbw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxmou-BtgAPutxD1sqvQdhLdgNWYgXYp9OySbWyYNk0gJY9irdXULfA6AUBQ1K7tSKw-A/exec';
 
 const monitorSelect = document.getElementById('monitorSelect');
 const board = document.getElementById('kanbanBoard');
